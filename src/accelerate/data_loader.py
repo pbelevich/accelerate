@@ -565,7 +565,11 @@ class DataLoaderShard(DataLoaderAdapter, DataLoaderStateMixin):
         try:
             current_batch = next(dataloader_iter)
         except StopIteration:
-            yield
+            # Nothing to iterate over on this worker – clean up and exit
+            self.end_of_dataloader = True
+            self._update_state_dict()
+            self.end()
+            return # <-- return, not yield
 
         batch_index = 0
         while True:
